@@ -51,6 +51,26 @@ void addOrSubtracMatrixes(AddOrSubtract addOrSubtract, Matrix matrix1, Matrix ma
 	}
 }
 
+typedef enum {MULTIPLY, DIVIDE} MultiplyOrDivide;
+// Will write directly to the origin matrix
+void multiplyOrDivideMatrixByScalar(MultiplyOrDivide multiplyOrDivide, Matrix* matrix, int scalar) {
+	for (int x = 0; x < matrix->rows; x++) {
+		for (int y = 0; y < matrix->columns; y++) {
+			int index = getIndex(matrix->columns, x, y);
+			switch (multiplyOrDivide) {
+				case MULTIPLY: {
+					matrix->array[index] = matrix->array[index] * scalar;
+					break;
+				}
+				case DIVIDE: {
+					matrix->array[index] = matrix->array[index] / scalar;
+					break;
+				}
+			}
+		}
+	}
+}
+
 void printMatrix(Matrix matrix) {
 	int rw = matrix.rows;
 	int clm = matrix.columns;
@@ -98,10 +118,15 @@ int main() {
 	Matrix matrixTest = {5, 5, (int*) arrayTest};
 	printMatrix(matrixTest);
 
+	// We need to allocate some space on the stack or else the Matrix will just point
+	// towards a zero address.
 	int arrayBlank[5][5] = {};
 	Matrix sumMat = {0, 0, (int*) arrayBlank};
 	addOrSubtracMatrixes(ADD, matrixTest, matrixTest, &sumMat);
 
+	printMatrix(sumMat);
+
+	multiplyOrDivideMatrixByScalar(MULTIPLY, &sumMat, 3);
 	printMatrix(sumMat);
 
 	Cube testCube = {"TestCube", verticeArray, testVector, testVector};
