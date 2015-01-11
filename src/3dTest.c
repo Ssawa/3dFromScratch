@@ -20,11 +20,12 @@ int getIndex(int width, int x, int y) {
 }
 
 typedef enum {ADD, SUBTRACT} AddOrSubtract;
-void addOrSubtracMatrixes(AddOrSubtract addOrSubtract, Matrix matrix1, Matrix matrix2, Matrix *matrixSum) {
+// Return 0 for success, anything else for an error
+int addOrSubtractMatrixes(AddOrSubtract addOrSubtract, Matrix matrix1, Matrix matrix2, Matrix* matrixSum) {
 
 	// To add matrixes they must be the same dimensions
 	if (matrix1.rows != matrix2.rows || matrix1.columns != matrix2.columns) {
-		return;
+		return 1;
 	}
 
 	// This could just as easily have been initialized with matrix2, as we should have
@@ -49,11 +50,19 @@ void addOrSubtracMatrixes(AddOrSubtract addOrSubtract, Matrix matrix1, Matrix ma
 			}
 		}
 	}
+	return 0;
+}
+// Small convinence functions
+int addMatrixes(Matrix matrix1, Matrix matrix2, Matrix* matrixSum) {
+	return addOrSubtractMatrixes(ADD, matrix1, matrix2, matrixSum);
+}
+int subtractMatrixes(Matrix matrix1, Matrix matrix2, Matrix* matrixSum) {
+	return addOrSubtractMatrixes(SUBTRACT, matrix1, matrix2, matrixSum);
 }
 
 typedef enum {MULTIPLY, DIVIDE} MultiplyOrDivide;
 // Will write directly to the origin matrix
-void multiplyOrDivideMatrixByScalar(MultiplyOrDivide multiplyOrDivide, Matrix* matrix, int scalar) {
+int multiplyOrDivideMatrixByScalar(MultiplyOrDivide multiplyOrDivide, Matrix* matrix, int scalar) {
 	for (int x = 0; x < matrix->rows; x++) {
 		for (int y = 0; y < matrix->columns; y++) {
 			int index = getIndex(matrix->columns, x, y);
@@ -69,8 +78,45 @@ void multiplyOrDivideMatrixByScalar(MultiplyOrDivide multiplyOrDivide, Matrix* m
 			}
 		}
 	}
+	// We may possibly add failure returns in the future
+	return 0;
+}
+int multiplyMatrixByScalar(Matrix* matrix, int scalar) {
+	return multiplyOrDivideMatrixByScalar(MULTIPLY, matrix, scalar);
+}
+int divideMatrixByScalar(Matrix* matrix, int scalar) {
+	return multiplyOrDivideMatrixByScalar(DIVIDE, matrix, scalar);
 }
 
+int multiplyMatrixes(Matrix matrix1, Matrix matrix2, Matrix* matrixProduct) {
+	// The columns of the first matrix must be equal to the columns of the second matrix
+	// when multiplying two matrixes
+	if (matrix1.columns != matrix2.rows) {
+		return 1;
+	}
+
+	int productRows = matrix1.rows;
+	int productColumns = matrix2.columns;
+	matrixProduct->rows = productRows;
+	matrixProduct->columns = productColumns;
+
+	// TODO - Thoroughly test this function to make sure the math works
+	for (int x = 0; x < productRows; x++) {
+		for (int y = 0; y < productColumns; y++) {
+
+			// Clear out the array before we write to its elements just incase
+			// it has already been set to something
+			int index = getIndex(productColumns, x, y);
+			matrixProduct->array[index] = 0;
+
+			// This could also be matrix2.rows as we should have already verified they are equal
+			for (int i = 0; i < matrix1.columns; i++) {
+				matrixProduct->array[index] += matrix1.array[getIndex(matrix1.columns, x, i)] * matrix2.array[getIndex(matrix2.columns, i, y)];
+			}
+		}
+	}
+
+}
 void printMatrix(Matrix matrix) {
 	int rw = matrix.rows;
 	int clm = matrix.columns;
@@ -122,12 +168,23 @@ int main() {
 	// towards a zero address.
 	int arrayBlank[5][5] = {};
 	Matrix sumMat = {0, 0, (int*) arrayBlank};
-	addOrSubtracMatrixes(ADD, matrixTest, matrixTest, &sumMat);
+	addMatrixes(matrixTest, matrixTest, &sumMat);
 
 	printMatrix(sumMat);
 
-	multiplyOrDivideMatrixByScalar(MULTIPLY, &sumMat, 3);
+	multiplyMatrixByScalar(&sumMat, 3);
 	printMatrix(sumMat);
+
+	// Test matrix multiplication
+	printf("-------------\n");
+	int array1[3][2] = {{2,-1},{0,3},{1,0}};
+	int array2[2][4] = {{0,1,4,-1},{-2,0,0,2}};
+	int fillerArray[3][4] = {};
+	Matrix matrix1 = {3, 2, (int*) array1};
+	Matrix matrix2 = {2, 4, (int*) array2};
+	Matrix fillMatrix = {0, 0, (int*) fillerArray};
+	multiplyMatrixes(matrix1, matrix2, &fillMatrix);
+	printMatrix(fillMatrix);
 
 	Cube testCube = {"TestCube", verticeArray, testVector, testVector};
 	printf("%s\n", testCube.name);
