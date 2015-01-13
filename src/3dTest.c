@@ -115,7 +115,7 @@ int multiplyMatrixes(Matrix matrix1, Matrix matrix2, Matrix* matrixProduct) {
 			}
 		}
 	}
-
+	return 0;
 }
 void printMatrix(Matrix matrix) {
 	int rw = matrix.rows;
