@@ -1,4 +1,4 @@
-WIN_LIBRARIES=-l user32 -l gdi32
+WIN_LIBRARIES=-l Gdi32
 WINDOWS_LIB=-L "C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Lib\x64" ${WIN_LIBRARIES}
 
 lib:
