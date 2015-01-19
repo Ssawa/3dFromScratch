@@ -1,5 +1,8 @@
 #include "windows.h"
 #include "stdint.h"
+#include <stdio.h>
+
+#include "matrix.h"
 
 typedef struct _backBuffer {
     BITMAPINFO header;
@@ -139,19 +142,71 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     int windowHeight = windowRect.bottom - windowRect.top;
 
     createBackBuffer(&backBuffer, windowWidth / 5, windowHeight / 5);
-    renderWeirdGradient(&backBuffer);
+    //renderWeirdGradient(&backBuffer);
     clearBuffer(&backBuffer);
-    drawPixel(&backBuffer, 0, 0, 255, 255, 255);
-    drawPixel(&backBuffer, 1, 1, 255, 255, 255);
+
+    Vector3d point1 = {.1, -.1, .1};
+    Vector3d point2 = {.1, -.1, -.1};
+    Vector3d point3 = {-.1, -.1, .1};
+    Vector3d point4 = {-.1, -.1, -.1};
+    Vector3d point5 = {.1, .1, .1};
+    Vector3d point6 = {-.1, .1, .1};
+    Vector3d point7 = {-.1, .1, -.1};
+    Vector3d point8 = {.1, .1, -.1};
+    Matrix rotatinYMatrix = MATRIX_BLANK(4, 4);
+    Matrix rotatinZMatrix = MATRIX_BLANK(4, 4);
+    getRotationZMatrix(&rotatinZMatrix, 45);
+    multiplyVectorByMatrix(&point1, rotatinZMatrix);
+    multiplyVectorByMatrix(&point2, rotatinZMatrix);
+    multiplyVectorByMatrix(&point3, rotatinZMatrix);
+    multiplyVectorByMatrix(&point4, rotatinZMatrix);
+    multiplyVectorByMatrix(&point5, rotatinZMatrix);
+    multiplyVectorByMatrix(&point6, rotatinZMatrix);
+    multiplyVectorByMatrix(&point7, rotatinZMatrix);
+    multiplyVectorByMatrix(&point8, rotatinZMatrix);
 
     HDC context = GetDC(hwnd);
     blitBuffer(&backBuffer, context, windowWidth, windowHeight);
     ShowWindow(hwnd, nCmdShow);
+    double yRotate = .0001;
+    int y = 0;
 
     MSG msg;
     while (GetMessage(&msg, NULL, 0, 0)) {
         TranslateMessage(&msg);
         DispatchMessage(&msg);
+
+        clearBuffer(&backBuffer);
+        y++;
+        y = y % 360;
+        //printf("%f\n", yRotate * y);
+        getRotationYMatrix(&rotatinYMatrix, yRotate * y);
+        multiplyVectorByMatrix(&point1, rotatinYMatrix);
+        multiplyVectorByMatrix(&point2, rotatinYMatrix);
+        multiplyVectorByMatrix(&point3, rotatinYMatrix);
+        multiplyVectorByMatrix(&point4, rotatinYMatrix);
+        multiplyVectorByMatrix(&point5, rotatinYMatrix);
+        multiplyVectorByMatrix(&point6, rotatinYMatrix);
+        multiplyVectorByMatrix(&point7, rotatinYMatrix);
+        multiplyVectorByMatrix(&point8, rotatinYMatrix);
+        Vector2d pixel1 = project3dToScreen(point1, backBuffer.width, backBuffer.height);
+        Vector2d pixel2 = project3dToScreen(point2, backBuffer.width, backBuffer.height);
+        Vector2d pixel3 = project3dToScreen(point3, backBuffer.width, backBuffer.height);
+        Vector2d pixel4 = project3dToScreen(point4, backBuffer.width, backBuffer.height);
+        Vector2d pixel5 = project3dToScreen(point5, backBuffer.width, backBuffer.height);
+        Vector2d pixel6 = project3dToScreen(point6, backBuffer.width, backBuffer.height);
+        Vector2d pixel7 = project3dToScreen(point7, backBuffer.width, backBuffer.height);
+        Vector2d pixel8 = project3dToScreen(point8, backBuffer.width, backBuffer.height);
+
+        drawPixel(&backBuffer, pixel1.x, pixel1.y, 255, 255, 255);
+        drawPixel(&backBuffer, pixel2.x, pixel2.y, 255, 255, 255);
+        drawPixel(&backBuffer, pixel3.x, pixel3.y, 255, 255, 255);
+        drawPixel(&backBuffer, pixel4.x, pixel4.y, 255, 255, 255);
+        drawPixel(&backBuffer, pixel5.x, pixel5.y, 255, 255, 255);
+        drawPixel(&backBuffer, pixel6.x, pixel6.y, 255, 255, 255);
+        drawPixel(&backBuffer, pixel7.x, pixel7.y, 255, 255, 255);
+        drawPixel(&backBuffer, pixel8.x, pixel8.y, 255, 255, 255);
+        //drawPixel(&backBuffer, 1, backBuffer.height - 1, 255, 255, 255);
         blitBuffer(&backBuffer, context, windowWidth, windowHeight);
     }
     return 0;

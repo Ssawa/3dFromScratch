@@ -209,3 +209,37 @@ void getRotationZMatrix(Matrix* matrix, double theta) {
 	 0, 0, 0, 1};
 	copyArrayToMemory(4, 4, array, matrix->array);
 }
+
+void vector3dToMatrix(Vector3d vector, Matrix* matrix) {
+	matrix->rows = 4;
+	matrix->columns = 1;
+	matrix->array[getIndex(1,0,0)] = vector.x;
+	matrix->array[getIndex(1,1,0)] = vector.y;
+	matrix->array[getIndex(1,2,0)] = vector.z;
+
+	// Right now we are assuming all vectors represent points,
+	// rather than direcions
+	matrix->array[getIndex(1,3,0)] = 1;
+}
+
+void multiplyVectorByMatrix(Vector3d* vector, Matrix matrix) {
+	Matrix matSum = MATRIX_BLANK(4, 1);
+	Matrix vectorMat = MATRIX_BLANK(4, 1);
+	vector3dToMatrix(*vector, &vectorMat);
+
+	multiplyMatrixes(matrix, vectorMat, &matSum);
+
+	vector->x = matSum.array[getIndex(1,0,0)];
+	vector->y = matSum.array[getIndex(1,1,0)];
+	vector->z = matSum.array[getIndex(1,2,0)];
+}
+
+// A *very* siimple projection function (completely orthoganal,
+// no projection matrix applied) Simply positions the point relative
+// to middle of screen
+Vector2d project3dToScreen(Vector3d vector3d, int screenWidth, int screenHeight) {
+	Vector2d vector2d = {};
+	vector2d.x = (vector3d.x * screenWidth) + (screenWidth / 2);
+	vector2d.y = (vector3d.y * screenHeight) + (screenHeight / 2);
+	return vector2d;
+}

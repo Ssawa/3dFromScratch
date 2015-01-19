@@ -17,6 +17,11 @@ typedef struct vector3d {
 	double z;
 } Vector3d;
 
+typedef struct vector2d {
+	double x;
+	double y;
+} Vector2d;
+
 int addMatrixes(Matrix matrix1, Matrix matrix2, Matrix* matrixSum);
 int subtractMatrixes(Matrix matrix1, Matrix matrix2, Matrix* matrixSum);
 
@@ -31,6 +36,12 @@ void getScalingMatrix(Matrix* matrix, int x, int y, int z);
 void getRotationXMatrix(Matrix* matrix, double theta);
 void getRotationYMatrix(Matrix* matrix, double theta);
 void getRotationZMatrix(Matrix* matrix, double theta);
+
+// Matrix should be small enough, for our purposes, we can pass it by value
+void multiplyVectorByMatrix(Vector3d* vector, Matrix matrix);
+
+// Project 3d vector onto 2d screen
+Vector2d project3dToScreen(Vector3d vector, int screenWidth, int screenHeight);
 
 // For debugging
 void printMatrix(Matrix matrix);
