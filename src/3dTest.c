@@ -14,6 +14,8 @@ typedef struct matrix {
 	unsigned int columns;
 	double* array;
 } Matrix;
+#define MATRIX_BLANK(y, x) {y, x, (double*)(double[y][x]) {}}
+#define MATRIX(y, x, ...) {y, x, (double*)(double[y][x]) __VA_ARGS__}
 
 int getIndex(int width, int x, int y) {
 	return (width * x + y);
@@ -35,9 +37,9 @@ int addOrSubtractMatrixes(AddOrSubtract addOrSubtract, Matrix matrix1, Matrix ma
 	matrixSum->rows = sumRows;
 	matrixSum->columns = sumColumns;
 
-	for (int x = 0; x < sumRows; x++) {
-		for (int y = 0; y < sumColumns; y++) {
-			int index = getIndex(sumColumns, x, y);
+	for (int y = 0; y < sumRows; y++) {
+		for (int x = 0; x < sumColumns; x++) {
+			int index = getIndex(sumColumns, y, x);
 			switch (addOrSubtract) {
 				case ADD: {
 					matrixSum->array[index] = matrix1.array[index] + matrix2.array[index];
@@ -63,9 +65,9 @@ int subtractMatrixes(Matrix matrix1, Matrix matrix2, Matrix* matrixSum) {
 typedef enum {MULTIPLY, DIVIDE} MultiplyOrDivide;
 // Will write directly to the origin matrix
 int multiplyOrDivideMatrixByScalar(MultiplyOrDivide multiplyOrDivide, Matrix* matrix, int scalar) {
-	for (int x = 0; x < matrix->rows; x++) {
-		for (int y = 0; y < matrix->columns; y++) {
-			int index = getIndex(matrix->columns, x, y);
+	for (int y = 0; y < matrix->rows; y++) {
+		for (int x = 0; x < matrix->columns; x++) {
+			int index = getIndex(matrix->columns, y, x);
 			switch (multiplyOrDivide) {
 				case MULTIPLY: {
 					matrix->array[index] = matrix->array[index] * scalar;
@@ -101,17 +103,17 @@ int multiplyMatrixes(Matrix matrix1, Matrix matrix2, Matrix* matrixProduct) {
 	matrixProduct->columns = productColumns;
 
 	// TODO - Thoroughly test this function to make sure the math works
-	for (int x = 0; x < productRows; x++) {
-		for (int y = 0; y < productColumns; y++) {
+	for (int y = 0; y < productRows; y++) {
+		for (int x = 0; x < productColumns; x++) {
 
 			// Clear out the array before we write to its elements just incase
 			// it has already been set to something
-			int index = getIndex(productColumns, x, y);
+			int index = getIndex(productColumns, y, x);
 			matrixProduct->array[index] = 0;
 
 			// This could also be matrix2.rows as we should have already verified they are equal
 			for (int i = 0; i < matrix1.columns; i++) {
-				matrixProduct->array[index] += matrix1.array[getIndex(matrix1.columns, x, i)] * matrix2.array[getIndex(matrix2.columns, i, y)];
+				matrixProduct->array[index] += matrix1.array[getIndex(matrix1.columns, y, i)] * matrix2.array[getIndex(matrix2.columns, i, x)];
 			}
 		}
 	}
@@ -121,11 +123,11 @@ void printMatrix(Matrix matrix) {
 	int rw = matrix.rows;
 	int clm = matrix.columns;
 
-	for (int x = 0; x < rw; x++) {
-		for (int y = 0; y < clm; y++) {
-			printf("%f", matrix.array[getIndex(clm, x, y)]);
+	for (int y = 0; y < rw; y++) {
+		for (int x = 0; x < clm; x++) {
+			printf("%f", matrix.array[getIndex(clm, y, x)]);
 
-			if ( y == clm - 1) {
+			if ( x == clm - 1) {
 				printf("\n");
 			} else {
 				printf(" | ");
@@ -146,8 +148,33 @@ typedef struct cube {
 	Vector3d target;
 } Cube;
 
+void copyArrayToMemory(int rows, int columns, double* array, double* pointer) {
+	for(int y = 0; y < rows; y++) {
+		for (int x = 0; x < columns; x++) {
+			int index = getIndex(columns, y, x);
+			pointer[index] = array[index];
+		}
+	}
+}
+
+void getIdentityMatrix(Matrix* matrix) {
+	matrix->rows = 4;
+	matrix->columns = 4;
+	double* array = (double*)(double[4][4])
+	{1, 0, 0, 0,
+	 0, 1, 0, 0,
+	 0, 0, 1, 0,
+	 0, 0, 0, 1};
+	 copyArrayToMemory(4, 4, array, matrix->array);
+}
+
 int main() {
-	Vector3d testVector = {1, 1, 1};
+	Matrix test = MATRIX(2, 2, {{1,2},{3,4}});
+	Matrix identityMatrix = MATRIX_BLANK(4,4);
+	//Matrix identityMatrix = {0, 0, (double*)(double[4][4]) {}};
+	getIdentityMatrix(&identityMatrix);
+	printMatrix(identityMatrix);
+	/*Vector3d testVector = {1, 1, 1};
 	Camera testCamera = {testVector, testVector};
 	Vector3d verticeArray[8] = {
 		{-1, 1, 1},
@@ -183,7 +210,7 @@ int main() {
 
 	Cube testCube = {"TestCube", verticeArray, testVector, testVector};
 	printf("%s\n", testCube.name);
-	printf("%f\n", testCube.vertices[1].x);
+	printf("%f\n", testCube.vertices[1].x);*/
 
 	return 0;
 }
