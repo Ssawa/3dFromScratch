@@ -7,5 +7,11 @@ mat:
 lib:
 	gcc src/3dtest.c -g -std=c99 -o 3dTest.exe
 
-win:
-	gcc src/win64_layer.c -g -std=c99 -o win64_test.exe ${WINDOWS_LIB}
+win: main.o
+	gcc output/main.o output/matrix.o -o win64_test.exe ${WINDOWS_LIB}
+
+main.o: src/win64_layer.c matrix.o
+	gcc -c src/win64_layer.c -g -std=c99 -o output/main.o
+
+matrix.o: src/matrix.c
+	gcc -c src/matrix.c -g -std=c99 -o output/matrix.o

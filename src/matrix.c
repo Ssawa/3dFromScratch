@@ -1,36 +1,39 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
-typedef struct matrix {
-	// This should always be four
-	int width;
-	int height;
-	double (*array)[4];
-} Matrix;
+#include "matrix.h"
+
+int getIndex(int width, int x, int y) {
+	return (width * x + y);
+}
 
 typedef enum {ADD, SUBTRACT} AddOrSubtract;
 // Return 0 for success, anything else for an error
 int addOrSubtractMatrixes(AddOrSubtract addOrSubtract, Matrix matrix1, Matrix matrix2, Matrix* matrixSum) {
-	if (matrix1.width != matrix2.width || matrix1.height != matrix2.height) {
+
+	// To add matrixes they must be the same dimensions
+	if (matrix1.rows != matrix2.rows || matrix1.columns != matrix2.columns) {
 		return 1;
 	}
 
 	// This could just as easily have been initialized with matrix2, as we should have
 	// already verified that they are the same dimensions.
-	int sumWidth = matrix1.width;
-	int sumHeight = matrix1.height;
-	matrixSum->width = sumWidth;
-	matrixSum->height = sumHeight;
+	int sumRows = matrix1.rows;
+	int sumColumns = matrix1.columns;
+	matrixSum->rows = sumRows;
+	matrixSum->columns = sumColumns;
 
-	for (int y = 0; y < sumHeight; y++) {
-		for (int x = 0; x < sumWidth; x++) {
+	for (int y = 0; y < sumRows; y++) {
+		for (int x = 0; x < sumColumns; x++) {
+			int index = getIndex(sumColumns, y, x);
 			switch (addOrSubtract) {
 				case ADD: {
-					matrixSum->array[y][x] = matrix1.array[y][x] + matrix2.array[y][x];
+					matrixSum->array[index] = matrix1.array[index] + matrix2.array[index];
 					break;
 				}
 				case SUBTRACT: {
-					matrixSum->array[y][x] = matrix1.array[y][x] - matrix2.array[y][x];
+					matrixSum->array[index] = matrix1.array[index] - matrix2.array[index];
 					break;
 				}
 			}
@@ -38,6 +41,7 @@ int addOrSubtractMatrixes(AddOrSubtract addOrSubtract, Matrix matrix1, Matrix ma
 	}
 	return 0;
 }
+// Small convinence functions
 int addMatrixes(Matrix matrix1, Matrix matrix2, Matrix* matrixSum) {
 	return addOrSubtractMatrixes(ADD, matrix1, matrix2, matrixSum);
 }
@@ -47,99 +51,17 @@ int subtractMatrixes(Matrix matrix1, Matrix matrix2, Matrix* matrixSum) {
 
 typedef enum {MULTIPLY, DIVIDE} MultiplyOrDivide;
 // Will write directly to the origin matrix
-int multiplyOrDivideMatrixByScalar(MultiplyOrDivide multiplyOrDivide, Matrix* matrix, double scalar) {
-	for (int y = 0; y < matrix->height; y++) {
-		for (int x = 0; x < matrix->width; x++) {
+int multiplyOrDivideMatrixByScalar(MultiplyOrDivide multiplyOrDivide, Matrix* matrix, int scalar) {
+	for (int y = 0; y < matrix->rows; y++) {
+		for (int x = 0; x < matrix->columns; x++) {
+			int index = getIndex(matrix->columns, y, x);
 			switch (multiplyOrDivide) {
 				case MULTIPLY: {
-					matrix->array[y][x] = matrix->array[y][x] * scalar;
+					matrix->array[index] = matrix->array[index] * scalar;
 					break;
 				}
 				case DIVIDE: {
-					matrix->array[y][x] = matrix->array[y][x] / scalar;
-					break;
-				}
-			}
-		}
-	}
-	// We may possibly add failure returns in the future
-	return 0;
-}
-int multiplyMatrixByScalar(Matrix* matrix, float scalar) {
-	return multiplyOrDivideMatrixByScalar(MULTIPLY, matrix, scalar);
-}
-int divideMatrixByScalar(Matrix* matrix, float scalar) {
-	return multiplyOrDivideMatrixByScalar(DIVIDE, matrix, scalar);
-}
-
-void printMatrix(Matrix matrix) {
-	for (int y = 0; y < matrix.height; y++) {
-		for (int x = 0; x < matrix.width; x++) {
-			printf("%f", matrix.array[y][x]);
-
-			if ( x == matrix.width - 1) {
-				printf("\n");
-			} else {
-				printf(" | ");
-			}
-		}
-	}
-}
-
-typedef int x2[2][2];
-
-int main() {
-	int test[2][2] = {{1,2},{3,4}};
-	int* point = (int*)(int[2][2]){{1,2},{3,4}};
-	Matrix matrix1 = {4, 4, (double[4][4]){{1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12}, {13, 14, 15, 16}}};
-	Matrix matrix2 = {0, 0, (double[4][4]){}};
-	addMatrixes(matrix1, matrix1, &matrix2);
-	printMatrix(matrix2);
-	printf("-------------\n");
-	multiplyMatrixByScalar(&matrix1, 4);
-	printMatrix(matrix1);
-	printf("-------------\n");
-}
-
-/*typedef enum {ADD, SUBTRACT} AddOrSubtract;
-// Return 0 for success, anything else for an error
-int addOrSubtractMatrixes(AddOrSubtract addOrSubtract, Matrix matrix1, Matrix matrix2, Matrix* matrixSum) {
-
-	for (int y = 0; y < 4; y++) {
-		for (int x = 0; x < 4; x++) {
-			switch (addOrSubtract) {
-				case ADD: {
-					(*matrixSum)[y][x] = matrix1[y][x] + matrix2[y][x];
-					break;
-				}
-				case SUBTRACT: {
-					(*matrixSum)[y][x] = matrix1[y][x] - matrix2[y][x];
-					break;
-				}
-			}
-		}
-	}
-	return 0;
-}
-int addMatrixes(Matrix matrix1, Matrix matrix2, Matrix* matrixSum) {
-	return addOrSubtractMatrixes(ADD, matrix1, matrix2, matrixSum);
-}
-int subtractMatrixes(Matrix matrix1, Matrix matrix2, Matrix* matrixSum) {
-	return addOrSubtractMatrixes(SUBTRACT, matrix1, matrix2, matrixSum);
-}
-
-typedef enum {MULTIPLY, DIVIDE} MultiplyOrDivide;
-// Will write directly to the origin matrix
-int multiplyOrDivideMatrixByScalar(MultiplyOrDivide multiplyOrDivide, Matrix* matrix, double scalar) {
-	for (int y = 0; y < 4; y++) {
-		for (int x = 0; x < 4; x++) {
-			switch (multiplyOrDivide) {
-				case MULTIPLY: {
-					(*matrix)[y][x] = (*matrix)[y][x] * scalar;
-					break;
-				}
-				case DIVIDE: {
-					(*matrix)[y][x] = (*matrix)[y][x] / scalar;
+					matrix->array[index] = matrix->array[index] / scalar;
 					break;
 				}
 			}
@@ -156,27 +78,43 @@ int divideMatrixByScalar(Matrix* matrix, int scalar) {
 }
 
 int multiplyMatrixes(Matrix matrix1, Matrix matrix2, Matrix* matrixProduct) {
-	for (int y = 0; y < 4; y++) {
-		for (int x = 0; x < 4; x++) {
+	// The columns of the first matrix must be equal to the columns of the second matrix
+	// when multiplying two matrixes
+	if (matrix1.columns != matrix2.rows) {
+		return 1;
+	}
+
+	int productRows = matrix1.rows;
+	int productColumns = matrix2.columns;
+	matrixProduct->rows = productRows;
+	matrixProduct->columns = productColumns;
+
+	// TODO - Thoroughly test this function to make sure the math works
+	for (int y = 0; y < productRows; y++) {
+		for (int x = 0; x < productColumns; x++) {
 
 			// Clear out the array before we write to its elements just incase
 			// it has already been set to something
-			(*matrixProduct)[y][x] = 0;
+			int index = getIndex(productColumns, y, x);
+			matrixProduct->array[index] = 0;
 
-			for (int i = 0; i < 4; i++) {
-				(*matrixProduct)[y][x] += matrix1[y][i] * matrix2[i][x];
+			// This could also be matrix2.rows as we should have already verified they are equal
+			for (int i = 0; i < matrix1.columns; i++) {
+				matrixProduct->array[index] += matrix1.array[getIndex(matrix1.columns, y, i)] * matrix2.array[getIndex(matrix2.columns, i, x)];
 			}
 		}
 	}
 	return 0;
 }
-
 void printMatrix(Matrix matrix) {
-	for (int y = 0; y < 4; y++) {
-		for (int x = 0; x < 4; x++) {
-			printf("%f", matrix[y][x]);
+	int rw = matrix.rows;
+	int clm = matrix.columns;
 
-			if ( x == 4 - 1) {
+	for (int y = 0; y < rw; y++) {
+		for (int x = 0; x < clm; x++) {
+			printf("%f", matrix.array[getIndex(clm, y, x)]);
+
+			if ( x == clm - 1) {
 				printf("\n");
 			} else {
 				printf(" | ");
@@ -185,11 +123,89 @@ void printMatrix(Matrix matrix) {
 	}
 }
 
-int main() {
-	int test[2][4] = {{1, 2, 3, 4}, {5, 6, 7, 8}};
-	int (*array)[4] = test;
-	Matrix matrix1 = (double[4][4]){1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16};
-	Matrix matrix2 = (double[4][4]){};
-	multiplyMatrixes(matrix1, matrix1, &matrix2);
-	printMatrix(matrix2);
-}*/
+typedef struct camera {
+	Vector3d position;
+	Vector3d target;
+} Camera;
+
+typedef struct cube {
+	char* name;
+	Vector3d* vertices;
+	Vector3d position;
+	Vector3d target;
+} Cube;
+
+void copyArrayToMemory(int rows, int columns, double* array, double* pointer) {
+	for(int y = 0; y < rows; y++) {
+		for (int x = 0; x < columns; x++) {
+			int index = getIndex(columns, y, x);
+			pointer[index] = array[index];
+		}
+	}
+}
+
+void getIdentityMatrix(Matrix* matrix) {
+	matrix->rows = 4;
+	matrix->columns = 4;
+	double* array = (double*)(double[4][4])
+	{1, 0, 0, 0,
+	 0, 1, 0, 0,
+	 0, 0, 1, 0,
+	 0, 0, 0, 1};
+	copyArrayToMemory(4, 4, array, matrix->array);
+}
+
+void getTranslationMatrix(Matrix* matrix, int x, int y, int z) {
+	matrix->rows = 4;
+	matrix->columns = 4;
+	double* array = (double*)(double[4][4])
+	{1, 0, 0, x,
+	 0, 1, 0, y,
+	 0, 0, 1, z,
+	 0, 0, 0, 1};
+	copyArrayToMemory(4, 4, array, matrix->array);
+}
+
+void getScalingMatrix(Matrix* matrix, int x, int y, int z) {
+	matrix->rows = 4;
+	matrix->columns = 4;
+	double* array = (double*)(double[4][4])
+	{x, 0, 0, 0,
+	 0, y, 0, 0,
+	 0, 0, z, 0,
+	 0, 0, 0, 1};
+	copyArrayToMemory(4, 4, array, matrix->array);
+}
+
+void getRotationXMatrix(Matrix* matrix, double theta) {
+	matrix->rows = 4;
+	matrix->columns = 4;
+	double* array = (double*)(double[4][4])
+	{1, 0, 0, 0,
+	 0, cos(theta), -sin(theta), 0,
+	 0, sin(theta), cos(theta), 0,
+	 0, 0, 0, 1};
+	copyArrayToMemory(4, 4, array, matrix->array);
+}
+
+void getRotationYMatrix(Matrix* matrix, double theta) {
+	matrix->rows = 4;
+	matrix->columns = 4;
+	double* array = (double*)(double[4][4])
+	{cos(theta), 0, sin(theta), 0,
+	 0, 1, 0, 0,
+	 -sin(theta), 0, cos(theta), 0,
+	 0, 0, 0, 1};
+	copyArrayToMemory(4, 4, array, matrix->array);
+}
+
+void getRotationZMatrix(Matrix* matrix, double theta) {
+	matrix->rows = 4;
+	matrix->columns = 4;
+	double* array = (double*)(double[4][4])
+	{cos(theta), -sin(theta), 0, 0,
+	 sin(theta), cos(theta), 0, 0,
+	 0, 0, 1, 0,
+	 0, 0, 0, 1};
+	copyArrayToMemory(4, 4, array, matrix->array);
+}

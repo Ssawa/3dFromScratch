@@ -1,5 +1,6 @@
 #include <stdlib.h>
 #include <stdio.h>
+#include <math.h>
 
 typedef struct vector3d {
 	double x;
@@ -165,15 +166,83 @@ void getIdentityMatrix(Matrix* matrix) {
 	 0, 1, 0, 0,
 	 0, 0, 1, 0,
 	 0, 0, 0, 1};
-	 copyArrayToMemory(4, 4, array, matrix->array);
+	copyArrayToMemory(4, 4, array, matrix->array);
+}
+
+void getTranslationMatrix(Matrix* matrix, int x, int y, int z) {
+	matrix->rows = 4;
+	matrix->columns = 4;
+	double* array = (double*)(double[4][4])
+	{1, 0, 0, x,
+	 0, 1, 0, y,
+	 0, 0, 1, z,
+	 0, 0, 0, 1};
+	copyArrayToMemory(4, 4, array, matrix->array);
+}
+
+void getScalingMatrix(Matrix* matrix, int x, int y, int z) {
+	matrix->rows = 4;
+	matrix->columns = 4;
+	double* array = (double*)(double[4][4])
+	{x, 0, 0, 0,
+	 0, y, 0, 0,
+	 0, 0, z, 0,
+	 0, 0, 0, 1};
+	copyArrayToMemory(4, 4, array, matrix->array);
+}
+
+void getRotationXMatrix(Matrix* matrix, double theta) {
+	matrix->rows = 4;
+	matrix->columns = 4;
+	double* array = (double*)(double[4][4])
+	{1, 0, 0, 0,
+	 0, cos(theta), -sin(theta), 0,
+	 0, sin(theta), cos(theta), 0,
+	 0, 0, 0, 1};
+	copyArrayToMemory(4, 4, array, matrix->array);
+}
+
+void getRotationYMatrix(Matrix* matrix, double theta) {
+	matrix->rows = 4;
+	matrix->columns = 4;
+	double* array = (double*)(double[4][4])
+	{cos(theta), 0, sin(theta), 0,
+	 0, 1, 0, 0,
+	 -sin(theta), 0, cos(theta), 0,
+	 0, 0, 0, 1};
+	copyArrayToMemory(4, 4, array, matrix->array);
+}
+
+void getRotationZMatrix(Matrix* matrix, double theta) {
+	matrix->rows = 4;
+	matrix->columns = 4;
+	double* array = (double*)(double[4][4])
+	{cos(theta), -sin(theta), 0, 0,
+	 sin(theta), cos(theta), 0, 0,
+	 0, 0, 1, 0,
+	 0, 0, 0, 1};
+	copyArrayToMemory(4, 4, array, matrix->array);
 }
 
 int main() {
 	Matrix test = MATRIX(2, 2, {{1,2},{3,4}});
+
 	Matrix identityMatrix = MATRIX_BLANK(4,4);
-	//Matrix identityMatrix = {0, 0, (double*)(double[4][4]) {}};
 	getIdentityMatrix(&identityMatrix);
 	printMatrix(identityMatrix);
+	printf("----------------\n");
+	Matrix translationMatrix = MATRIX_BLANK(4, 4);
+	getTranslationMatrix(&translationMatrix, 4, 5, 6);
+	printMatrix(translationMatrix);
+	printf("----------------\n");
+	Matrix scalingMatrix = MATRIX_BLANK(4, 4);
+	getScalingMatrix(&scalingMatrix, 4, 5, 6);
+	printMatrix(scalingMatrix);
+	printf("----------------\n");
+	Matrix rotatinXMatrix = MATRIX_BLANK(4, 4);
+	getRotationXMatrix(&rotatinXMatrix, 1);
+	printMatrix(rotatinXMatrix);
+	printf("----------------\n");
 	/*Vector3d testVector = {1, 1, 1};
 	Camera testCamera = {testVector, testVector};
 	Vector3d verticeArray[8] = {
