@@ -1,6 +1,9 @@
 WIN_LIBRARIES=-l Gdi32
 WINDOWS_LIB=-L "C:\Program Files (x86)\Microsoft SDKs\Windows\v7.1A\Lib\x64" ${WIN_LIBRARIES}
 
+mat:
+	gcc src/matrix.c -g -std=c99 -o matrix.exe
+
 lib:
 	gcc src/3dtest.c -g -std=c99 -o 3dTest.exe
 

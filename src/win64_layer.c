@@ -42,7 +42,10 @@ void blitBuffer(BackBuffer* buffer, HDC context, int destWidth, int destHeight) 
 void clearBuffer(BackBuffer* buffer) {
      uint32_t* pixel = (uint32_t*)buffer->bufferLoc;
      for (int y = 0; y < buffer->height; y++) {
-
+        for (int x = 0; x < buffer->width; x++) {
+            *pixel = 0;
+            pixel++;
+        }
      }
 }
 
@@ -136,7 +139,8 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     int windowHeight = windowRect.bottom - windowRect.top;
 
     createBackBuffer(&backBuffer, windowWidth / 5, windowHeight / 5);
-    //renderWeirdGradient(&backBuffer);
+    renderWeirdGradient(&backBuffer);
+    clearBuffer(&backBuffer);
     drawPixel(&backBuffer, 0, 0, 255, 255, 255);
     drawPixel(&backBuffer, 1, 1, 255, 255, 255);
 

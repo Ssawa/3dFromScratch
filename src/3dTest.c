@@ -2,9 +2,9 @@
 #include <stdio.h>
 
 typedef struct vector3d {
-	int x;
-	int y;
-	int z;
+	double x;
+	double y;
+	double z;
 } Vector3d;
 
 // TODO - See if there's an easier way to handle scalable 2d arrays
@@ -12,7 +12,7 @@ typedef struct vector3d {
 typedef struct matrix {
 	unsigned int rows;
 	unsigned int columns;
-	int* array;
+	double* array;
 } Matrix;
 
 int getIndex(int width, int x, int y) {
@@ -123,7 +123,7 @@ void printMatrix(Matrix matrix) {
 
 	for (int x = 0; x < rw; x++) {
 		for (int y = 0; y < clm; y++) {
-			printf("%d", matrix.array[getIndex(clm, x, y)]);
+			printf("%f", matrix.array[getIndex(clm, x, y)]);
 
 			if ( y == clm - 1) {
 				printf("\n");
@@ -160,14 +160,12 @@ int main() {
 		{1, -1, -1}
 	};
 
-	int arrayTest[5][5] = {{1,2,3,4,5},{6,7,8,9,10},{11,12,13,14,15},{16,17,18,19,20},{21,22,23,24,25}};
-	Matrix matrixTest = {5, 5, (int*) arrayTest};
+	Matrix matrixTest = {5, 5, (double*)(double[5][5]){{1,2,3,4,5},{6,7,8,9,10},{11,12,13,14,15},{16,17,18,19,20},{21,22,23,24,25}}};
 	printMatrix(matrixTest);
 
 	// We need to allocate some space on the stack or else the Matrix will just point
 	// towards a zero address.
-	int arrayBlank[5][5] = {};
-	Matrix sumMat = {0, 0, (int*) arrayBlank};
+	Matrix sumMat = {0, 0, (double*)(double[5][5]){}};
 	addMatrixes(matrixTest, matrixTest, &sumMat);
 
 	printMatrix(sumMat);
@@ -177,18 +175,15 @@ int main() {
 
 	// Test matrix multiplication
 	printf("-------------\n");
-	int array1[3][2] = {{2,-1},{0,3},{1,0}};
-	int array2[2][4] = {{0,1,4,-1},{-2,0,0,2}};
-	int fillerArray[3][4] = {};
-	Matrix matrix1 = {3, 2, (int*) array1};
-	Matrix matrix2 = {2, 4, (int*) array2};
-	Matrix fillMatrix = {0, 0, (int*) fillerArray};
+	Matrix matrix1 = {3, 2, (double*)(double[3][2]) {{2,-1},{0,3},{1,0}}};
+	Matrix matrix2 = {2, 4, (double*)(double[2][4]) {{0,1,4,-1},{-2,0,0,2}}};
+	Matrix fillMatrix = {0, 0, (double*)(double[3][4]){}};
 	multiplyMatrixes(matrix1, matrix2, &fillMatrix);
 	printMatrix(fillMatrix);
 
 	Cube testCube = {"TestCube", verticeArray, testVector, testVector};
 	printf("%s\n", testCube.name);
-	printf("%d\n", testCube.vertices[1].x);
+	printf("%f\n", testCube.vertices[1].x);
 
 	return 0;
 }
