@@ -84,6 +84,22 @@ void drawPixel(BackBuffer* buffer, int x, int y, uint8_t r, uint8_t g, uint8_t b
     *pixel = ((r << 16) | (g << 8) | (b << 0)); 
 }
 
+void drawLine(BackBuffer* buffer, Vector2d point1, Vector2d point2) {
+    double dist = distBetweenPoints(point1, point2);
+
+    // If the distance is less than 1 pixel than we can just return
+    if (dist < 1) {
+        return;
+    }
+
+    // Recursivly find the mid point, draw the pixel, and call this function
+    // again
+    Vector2d midPoint = getMidPoint(point1, point2);
+    drawPixel(buffer, midPoint.x, midPoint.y, 255, 255, 255);
+    drawLine(buffer, point1, midPoint);
+    drawLine(buffer, midPoint, point2);
+}
+
 LRESULT CALLBACK WindowHandler(HWND hwnd, UINT msg, WPARAM wParam, LPARAM lParam)
 {
     switch(msg)
@@ -141,29 +157,45 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
     int windowWidth = windowRect.right - windowRect.left;
     int windowHeight = windowRect.bottom - windowRect.top;
 
-    createBackBuffer(&backBuffer, windowWidth / 5, windowHeight / 5);
+    createBackBuffer(&backBuffer, windowWidth, windowHeight);
     //renderWeirdGradient(&backBuffer);
     clearBuffer(&backBuffer);
 
-    Vector3d point1 = {.1, -.1, .1};
-    Vector3d point2 = {.1, -.1, -.1};
-    Vector3d point3 = {-.1, -.1, .1};
-    Vector3d point4 = {-.1, -.1, -.1};
-    Vector3d point5 = {.1, .1, .1};
-    Vector3d point6 = {-.1, .1, .1};
-    Vector3d point7 = {-.1, .1, -.1};
-    Vector3d point8 = {.1, .1, -.1};
+    Vector3d vertices[8] = {{.1, -.1, .1},
+                            {.1, -.1, -.1},
+                            {-.1, -.1, .1},
+                            {-.1, -.1, -.1},
+                            {.1, .1, .1},
+                            {-.1, .1, .1},
+                            {-.1, .1, -.1},
+                            {.1, .1, -.1}};
+    Mesh mesh = {8, vertices};
     Matrix rotatinYMatrix = MATRIX_BLANK(4, 4);
     Matrix rotatinZMatrix = MATRIX_BLANK(4, 4);
+    Matrix rotatinXMatrix = MATRIX_BLANK(4, 4);
+
+    // We're only setting this once but we are multiplying
+    // the same point by it every frame
+    getRotationYMatrix(&rotatinYMatrix, .02);
     getRotationZMatrix(&rotatinZMatrix, 45);
-    multiplyVectorByMatrix(&point1, rotatinZMatrix);
-    multiplyVectorByMatrix(&point2, rotatinZMatrix);
-    multiplyVectorByMatrix(&point3, rotatinZMatrix);
-    multiplyVectorByMatrix(&point4, rotatinZMatrix);
-    multiplyVectorByMatrix(&point5, rotatinZMatrix);
-    multiplyVectorByMatrix(&point6, rotatinZMatrix);
-    multiplyVectorByMatrix(&point7, rotatinZMatrix);
-    multiplyVectorByMatrix(&point8, rotatinZMatrix);
+    getRotationXMatrix(&rotatinXMatrix, 10);
+    multiplyVectorByMatrix(&mesh.vertices[0], rotatinZMatrix);
+    multiplyVectorByMatrix(&mesh.vertices[1], rotatinZMatrix);
+    multiplyVectorByMatrix(&mesh.vertices[2], rotatinZMatrix);
+    multiplyVectorByMatrix(&mesh.vertices[3], rotatinZMatrix);
+    multiplyVectorByMatrix(&mesh.vertices[4], rotatinZMatrix);
+    multiplyVectorByMatrix(&mesh.vertices[5], rotatinZMatrix);
+    multiplyVectorByMatrix(&mesh.vertices[6], rotatinZMatrix);
+    multiplyVectorByMatrix(&mesh.vertices[7], rotatinZMatrix);
+
+    multiplyVectorByMatrix(&mesh.vertices[0], rotatinXMatrix);
+    multiplyVectorByMatrix(&mesh.vertices[1], rotatinXMatrix);
+    multiplyVectorByMatrix(&mesh.vertices[2], rotatinXMatrix);
+    multiplyVectorByMatrix(&mesh.vertices[3], rotatinXMatrix);
+    multiplyVectorByMatrix(&mesh.vertices[4], rotatinXMatrix);
+    multiplyVectorByMatrix(&mesh.vertices[5], rotatinXMatrix);
+    multiplyVectorByMatrix(&mesh.vertices[6], rotatinXMatrix);
+    multiplyVectorByMatrix(&mesh.vertices[7], rotatinXMatrix);
 
     HDC context = GetDC(hwnd);
     blitBuffer(&backBuffer, context, windowWidth, windowHeight);
@@ -177,26 +209,26 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         DispatchMessage(&msg);
 
         clearBuffer(&backBuffer);
-        y++;
-        y = y % 360;
+        yRotate += .0001;
+        //y++;
+        //y = y % 360;
         //printf("%f\n", yRotate * y);
-        getRotationYMatrix(&rotatinYMatrix, yRotate * y);
-        multiplyVectorByMatrix(&point1, rotatinYMatrix);
-        multiplyVectorByMatrix(&point2, rotatinYMatrix);
-        multiplyVectorByMatrix(&point3, rotatinYMatrix);
-        multiplyVectorByMatrix(&point4, rotatinYMatrix);
-        multiplyVectorByMatrix(&point5, rotatinYMatrix);
-        multiplyVectorByMatrix(&point6, rotatinYMatrix);
-        multiplyVectorByMatrix(&point7, rotatinYMatrix);
-        multiplyVectorByMatrix(&point8, rotatinYMatrix);
-        Vector2d pixel1 = project3dToScreen(point1, backBuffer.width, backBuffer.height);
-        Vector2d pixel2 = project3dToScreen(point2, backBuffer.width, backBuffer.height);
-        Vector2d pixel3 = project3dToScreen(point3, backBuffer.width, backBuffer.height);
-        Vector2d pixel4 = project3dToScreen(point4, backBuffer.width, backBuffer.height);
-        Vector2d pixel5 = project3dToScreen(point5, backBuffer.width, backBuffer.height);
-        Vector2d pixel6 = project3dToScreen(point6, backBuffer.width, backBuffer.height);
-        Vector2d pixel7 = project3dToScreen(point7, backBuffer.width, backBuffer.height);
-        Vector2d pixel8 = project3dToScreen(point8, backBuffer.width, backBuffer.height);
+        multiplyVectorByMatrix(&mesh.vertices[0], rotatinYMatrix);
+        multiplyVectorByMatrix(&mesh.vertices[1], rotatinYMatrix);
+        multiplyVectorByMatrix(&mesh.vertices[2], rotatinYMatrix);
+        multiplyVectorByMatrix(&mesh.vertices[3], rotatinYMatrix);
+        multiplyVectorByMatrix(&mesh.vertices[4], rotatinYMatrix);
+        multiplyVectorByMatrix(&mesh.vertices[5], rotatinYMatrix);
+        multiplyVectorByMatrix(&mesh.vertices[6], rotatinYMatrix);
+        multiplyVectorByMatrix(&mesh.vertices[7], rotatinYMatrix);
+        Vector2d pixel1 = project3dToScreen(mesh.vertices[0], backBuffer.width, backBuffer.height);
+        Vector2d pixel2 = project3dToScreen(mesh.vertices[1], backBuffer.width, backBuffer.height);
+        Vector2d pixel3 = project3dToScreen(mesh.vertices[2], backBuffer.width, backBuffer.height);
+        Vector2d pixel4 = project3dToScreen(mesh.vertices[3], backBuffer.width, backBuffer.height);
+        Vector2d pixel5 = project3dToScreen(mesh.vertices[4], backBuffer.width, backBuffer.height);
+        Vector2d pixel6 = project3dToScreen(mesh.vertices[5], backBuffer.width, backBuffer.height);
+        Vector2d pixel7 = project3dToScreen(mesh.vertices[6], backBuffer.width, backBuffer.height);
+        Vector2d pixel8 = project3dToScreen(mesh.vertices[7], backBuffer.width, backBuffer.height);
 
         drawPixel(&backBuffer, pixel1.x, pixel1.y, 255, 255, 255);
         drawPixel(&backBuffer, pixel2.x, pixel2.y, 255, 255, 255);
@@ -206,6 +238,22 @@ int WINAPI WinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance,
         drawPixel(&backBuffer, pixel6.x, pixel6.y, 255, 255, 255);
         drawPixel(&backBuffer, pixel7.x, pixel7.y, 255, 255, 255);
         drawPixel(&backBuffer, pixel8.x, pixel8.y, 255, 255, 255);
+
+        drawLine(&backBuffer, pixel1, pixel2);
+        drawLine(&backBuffer, pixel1, pixel3);
+        drawLine(&backBuffer, pixel3, pixel4);
+        drawLine(&backBuffer, pixel4, pixel2);
+
+        drawLine(&backBuffer, pixel5, pixel6);
+        drawLine(&backBuffer, pixel6, pixel7);
+        drawLine(&backBuffer, pixel7, pixel8);
+        drawLine(&backBuffer, pixel8, pixel5);
+
+        drawLine(&backBuffer, pixel1, pixel5);
+        drawLine(&backBuffer, pixel2, pixel8);
+        drawLine(&backBuffer, pixel3, pixel6);
+        drawLine(&backBuffer, pixel4, pixel7);
+
         //drawPixel(&backBuffer, 1, backBuffer.height - 1, 255, 255, 255);
         blitBuffer(&backBuffer, context, windowWidth, windowHeight);
     }

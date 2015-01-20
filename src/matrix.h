@@ -22,6 +22,11 @@ typedef struct vector2d {
 	double y;
 } Vector2d;
 
+typedef struct mesh {
+	int vertNum;
+	Vector3d* vertices;
+} Mesh;
+
 int addMatrixes(Matrix matrix1, Matrix matrix2, Matrix* matrixSum);
 int subtractMatrixes(Matrix matrix1, Matrix matrix2, Matrix* matrixSum);
 
@@ -39,9 +44,13 @@ void getRotationZMatrix(Matrix* matrix, double theta);
 
 // Matrix should be small enough, for our purposes, we can pass it by value
 void multiplyVectorByMatrix(Vector3d* vector, Matrix matrix);
+void multiplyMeshByMatrix(Mesh* mesh, Matrix matrix);
 
 // Project 3d vector onto 2d screen
 Vector2d project3dToScreen(Vector3d vector, int screenWidth, int screenHeight);
+
+double distBetweenPoints(Vector2d point1, Vector2d point2);
+Vector2d getMidPoint(Vector2d point1, Vector2d point2);
 
 // For debugging
 void printMatrix(Matrix matrix);

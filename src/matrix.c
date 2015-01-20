@@ -128,13 +128,6 @@ typedef struct camera {
 	Vector3d target;
 } Camera;
 
-typedef struct cube {
-	char* name;
-	Vector3d* vertices;
-	Vector3d position;
-	Vector3d target;
-} Cube;
-
 void copyArrayToMemory(int rows, int columns, double* array, double* pointer) {
 	for(int y = 0; y < rows; y++) {
 		for (int x = 0; x < columns; x++) {
@@ -234,6 +227,10 @@ void multiplyVectorByMatrix(Vector3d* vector, Matrix matrix) {
 	vector->z = matSum.array[getIndex(1,2,0)];
 }
 
+void multiplyMeshByMatrix(Mesh* mesh, Matrix matrix) {
+
+}
+
 // A *very* siimple projection function (completely orthoganal,
 // no projection matrix applied) Simply positions the point relative
 // to middle of screen
@@ -242,4 +239,17 @@ Vector2d project3dToScreen(Vector3d vector3d, int screenWidth, int screenHeight)
 	vector2d.x = (vector3d.x * screenWidth) + (screenWidth / 2);
 	vector2d.y = (vector3d.y * screenHeight) + (screenHeight / 2);
 	return vector2d;
+}
+
+double distBetweenPoints(Vector2d point1, Vector2d point2) {
+	int xDiff = point2.x - point1.x;
+	int yDiff = point2.y - point1.y;
+	return sqrt((xDiff * xDiff) + (yDiff * yDiff));
+}
+
+Vector2d getMidPoint(Vector2d point1, Vector2d point2) {
+	Vector2d midPoint = {};
+	midPoint.x = (point1.x + point2.x) / 2;
+	midPoint.y = (point1.y + point2.y) / 2;
+	return midPoint;
 }
